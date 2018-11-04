@@ -12,8 +12,13 @@ before do
 	init_db
 end
 
+# configure вызывается каждый раз при конфигурации приложения
+# когда изменился код программы и перезагрузилась страница
 configure do
+	# инициализация БД
 	init_db
+
+	# создаёт таблицу если таблица не существует
 	@db.execute 'CREATE TABLE IF NOT EXISTS Posts
 	(
 		id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -22,9 +27,14 @@ configure do
 end	
 
 get '/' do
+	#выбираем список постов из базы данных
+    @results = @db.execute 'select * from Posts order by id desc'
+
 	erb :index
 end
 
+#обработчик get-запроса /new
+# (браузер получает страницу с сервера)
 get '/new' do
  	erb :new
 end
