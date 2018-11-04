@@ -97,5 +97,14 @@ post '/details/:post_id' do
 	# получаем переменную из post запроса
 	content=params[:content]
 
-	erb "You typed comment: #{content} for post #{post_id}"
+	# сохраняем данные в БД . 
+	# сколько знаков вопроса, столько и элементов в массиве
+	@db.execute "insert into Comments (content, 
+				  created_date, post_id) 
+  	               values (?, datetime(), ?)", 
+  	               [content, post_id]
+
+    # перенаправляем на страницу поста
+    redirect to ('/details/' + post_id)
+
 end
