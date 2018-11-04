@@ -7,8 +7,9 @@ def init_db
 	@db = SQLite3::Database.new 'lepro1.db'
 	@db.results_as_hash = true
 end
-
+# вызывается каждый раз при перезагрузке любой страницы
 before do
+	#инициализация БД
 	init_db
 end
 
@@ -24,10 +25,19 @@ configure do
 		id INTEGER PRIMARY KEY AUTOINCREMENT, 
 		created_date DATE, content TEXT
 	)'
+
+    # создаёт таблицу если таблица не существует
+	@db.execute 'CREATE TABLE IF NOT EXISTS Comments
+	(
+		id INTEGER PRIMARY KEY AUTOINCREMENT, 
+		created_date DATE, content TEXT,
+		post_id integer
+	)'
 end	
 
 get '/' do
-	#выбираем список постов из базы данных
+
+	# выбираем список постов из БД
     @results = @db.execute 'select * from Posts order by 
                             id desc'
 
@@ -40,7 +50,11 @@ get '/new' do
  	erb :new
 end
 
+# обработчик post запроса /new
+# браузер отправляет данные на сервер
 post '/new' do
+
+	# получаем переменную из post запроса
   	content=params[:content]
 
   	if content.length <=0
@@ -54,20 +68,18 @@ post '/new' do
 
   	# перенаправление на главную страницу
   	redirect to '/'            
-  	erb "You typed #{content}"
 end
 
-#вывод информации о посте
-
+# вывод информации о посте
 get '/details/:post_id' do
 
-	#получаем переменную из url'a
+	# получаем переменную из url'a
 	post_id = params[:post_id]
-
+    
     # получаем список постов
-    # у нас будет только один пост
+    # будет только один пост
 	results = @db.execute 'select * from Posts where 
-	                      id = ?', [post_id]
+	                      id  = ?', [post_id]
 
 	# выбираем этот один пост в переменную @row                      
 	@row = results[0]                      
